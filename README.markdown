@@ -13,43 +13,31 @@ be appropriate), but you might also just want to say, "everything needs to get
 a new timestamp that doesn't already have one, let's say when the US beat
 Canada in hockey in the Olympics."
 
+How to use
+===========
+You can add this as a plugin into your rails application.
 
 Example
 =======
 
 To generate a mongration, just do:
 
-`script/generate mongration whatever_you_want_your_mongration_to_be`
+`rails generate mongration whatever_you_want_your_mongration_to_be`
 
 To run it, do
 
-`rake db:mongrate`
+`rake mongo:mongrate`
 
-Other rake tasks added have been `db:mongrate:redo`, `db:mongrate:up`, `db:mongrate:down`, `db:mongrate:rollback`.
+Other rake tasks added have been `mongo:mongrate:redo`, `mongo:mongrate:up`, `mongo:mongrate:down`, `mongo:mongrate:rollback`.
 
 
 Dependencies
 ============
 
 You need Mongo and MongoMapper for this to be of any use.
+This is tested with rails 3.it 'll not support the older version .
+please use https://github.com/terrbear/mongrations for rails older version.
 
-Also, this has only been tested on Rails 2.3.5. 
-
-Disclaimer
-==========
-
-*This is not ready for production*
-
-I just adapted this, at 10:30PM, half watching the Olympics. I'm not responsible 
-for any damage to your data, your mongodb, your bongos, your cat, your wife, or 
-your kids as a result of installing this plugin.
-
-Give it a few days. Please report bugs. 
-
-Credit
-======
-Original code is from Rails 2.3.5 and ActiveRecord 2.3.5, now adapted to work
-with MongoMapper.
 
 License
 =======
