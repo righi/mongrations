@@ -82,7 +82,7 @@ module MongoMapper
       end
 
       def connection
-        MongoMapper::Base.connection
+        MongoMapper.connection
       end
 
       def method_missing(method, *arguments, &block)

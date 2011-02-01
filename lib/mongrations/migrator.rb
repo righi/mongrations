@@ -1,20 +1,23 @@
 module MongoMapper
-  class Migrator#:nodoc:
+  class Migrator #:nodoc:
     class << self
       def migrate(migrations_path, target_version = nil)
         case
-          when target_version.nil?              then up(migrations_path, target_version)
-          when current_version > target_version then down(migrations_path, target_version)
-          else                                       up(migrations_path, target_version)
+        when target_version.nil? then
+          up(migrations_path, target_version)
+        when current_version > target_version then
+          down(migrations_path, target_version)
+        else
+          up(migrations_path, target_version)
         end
       end
 
       def rollback(migrations_path, steps=1)
-        migrator = self.new(:down, migrations_path)
+        migrator    = self.new(:down, migrations_path)
         start_index = migrator.migrations.index(migrator.current_migration)
-        
+
         return unless start_index
-        
+
         finish = migrator.migrations[start_index + steps]
         down(migrations_path, finish ? finish.version : 0)
       end
@@ -26,13 +29,13 @@ module MongoMapper
       def down(migrations_path, target_version = nil)
         self.new(:down, migrations_path, target_version).migrate
       end
-      
+
       def run(direction, migrations_path, target_version)
         self.new(direction, migrations_path, target_version).run
       end
 
       def get_all_versions
-        MongoMapper::SchemaMigration.all.map{|sm| sm.version.to_i}.sort
+        MongoMapper::SchemaMigration.all.map { |sm| sm.version.to_i }.sort
       end
 
       def current_version
@@ -40,23 +43,23 @@ module MongoMapper
       end
 
       def proper_table_name(name)
-        # Use the Active Record objects own table_name, or pre/suffix from MongoMapper::Base if name is a symbol/string
-        name.table_name rescue "#{MongoMapper::Base.table_name_prefix}#{name}#{MongoMapper::Base.table_name_suffix}"
+        name.table_name rescue name.to_s
       end
     end
 
     def initialize(direction, migrations_path, target_version = nil)
-      @direction, @migrations_path, @target_version = direction, migrations_path, target_version      
+      target_version = target_version.to_i unless target_version.nil?
+      @direction, @migrations_path, @target_version = direction, migrations_path, target_version
     end
 
     def current_version
       migrated.last || 0
     end
-    
+
     def current_migration
       migrations.detect { |m| m.version == current_version }
     end
-    
+
     def run
       target = migrations.detect { |m| m.version == @target_version }
       raise UnknownMigrationVersionError.new(@target_version) if target.nil?
@@ -68,19 +71,19 @@ module MongoMapper
 
     def migrate
       current = migrations.detect { |m| m.version == current_version }
-      target = migrations.detect { |m| m.version == @target_version }
+      target  = migrations.detect { |m| m.version == @target_version }
 
       if target.nil? && !@target_version.nil? && @target_version > 0
         raise UnknownMigrationVersionError.new(@target_version)
       end
-      
-      start = up? ? 0 : (migrations.index(current) || 0)
-      finish = migrations.index(target) || migrations.size - 1
+
+      start    = up? ? 0 : (migrations.index(current) || 0)
+      finish   = migrations.index(target) || migrations.size - 1
       runnable = migrations[start..finish]
-      
+
       # skip the last migration if we're headed down, but not ALL the way down
       runnable.pop if down? && !target.nil?
-      
+
       runnable.each do |migration|
         # On our way up, we skip migrating the ones we've already migrated
         next if up? && migrated.include?(migration.version.to_i)
@@ -98,29 +101,29 @@ module MongoMapper
 
     def migrations
       @migrations ||= begin
-        files = Dir["#{@migrations_path}/[0-9]*_*.rb"]
-        
+        files      = Dir["#{@migrations_path}/[0-9]*_*.rb"]
+
         migrations = files.inject([]) do |klasses, file|
           version, name = file.scan(/([0-9]+)_([_a-z0-9]*).rb/).first
-          
+
           raise IllegalMigrationNameError.new(file) unless version
           version = version.to_i
-          
+
           if klasses.detect { |m| m.version == version }
-            raise DuplicateMigrationVersionError.new(version) 
+            raise DuplicateMigrationVersionError.new(version)
           end
 
           if klasses.detect { |m| m.name == name.camelize }
-            raise DuplicateMigrationNameError.new(name.camelize) 
+            raise DuplicateMigrationNameError.new(name.camelize)
           end
-          
-          klasses << returning(MigrationProxy.new) do |migration|
+
+          klasses << MigrationProxy.new.tap do |migration|
             migration.name     = name.camelize
             migration.version  = version
             migration.filename = file
           end
         end
-        
+
         migrations = migrations.sort_by(&:version)
         down? ? migrations.reverse : migrations
       end
@@ -136,34 +139,31 @@ module MongoMapper
     end
 
     private
-      def record_version_state_after_migrating(version)
-        @migrated_versions ||= []
-        if down?
-          @migrated_versions.delete(version.to_i)
-          sm = MongoMapper::SchemaMigration.find_by_version(version.to_s)
-          sm && sm.delete
-        else
-          @migrated_versions.push(version.to_i).sort!
-          MongoMapper::SchemaMigration.create(:version => version)
-        end
-      end
 
-      def up?
-        @direction == :up
+    def record_version_state_after_migrating(version)
+      @migrated_versions ||= []
+      if down?
+        @migrated_versions.delete(version.to_i)
+        sm = MongoMapper::SchemaMigration.find_by_version(version.to_s)
+        sm && sm.delete
+      else
+        @migrated_versions.push(version.to_i).sort!
+        MongoMapper::SchemaMigration.create(:version => version)
       end
+    end
 
-      def down?
-        @direction == :down
-      end
+    def up?
+      @direction == :up
+    end
 
-      # Wrap the migration in a transaction only if supported by the adapter.
-      def ddl_transaction(&block)
-        if Base.connection.supports_ddl_transactions?
-          Base.transaction { block.call }
-        else
-          block.call
-        end
-      end
+    def down?
+      @direction == :down
+    end
+
+    # Wrap the migration in a transaction only if supported by the adapter.
+    # (It's not.)
+    def ddl_transaction(&block)
+      block.call
+    end
   end
-  
 end
