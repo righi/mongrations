@@ -5,7 +5,7 @@ require 'shoulda'
 require 'matchy'
 require 'mongo_mapper'
 require 'models/widget'
-require 'lib/mongration'
+require 'lib/mongrations'
 
 class ActiveSupport::TestCase
   def teardown
