@@ -18,4 +18,9 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
+
+  s.add_development_dependency "shoulda"
+  s.add_development_dependency "matchy"
+
+  s.add_dependency "mongo_mapper"
 end

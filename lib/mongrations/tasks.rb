@@ -31,11 +31,11 @@ namespace :mongo do
       raise "VERSION is required" unless version
       MongoMapper::Migrator.run(:down, @path, version)
     end
-  end
 
-  desc 'Rolls the schema back to the previous version. Specify the number of steps with STEP=n'
-  task :mongo_rollback => :environment do
-    step = ENV['STEP'] ? ENV['STEP'].to_i : 1
-    MongoMapper::Migrator.rollback(@path, step)
+    desc 'Rolls the schema back to the previous version. Specify the number of steps with STEP=n'
+    task :rollback => :environment do
+      step = ENV['STEP'] ? ENV['STEP'].to_i : 1
+      MongoMapper::Migrator.rollback(@path, step)
+    end    
   end
 end
