@@ -13,7 +13,7 @@ namespace :mongo do
         Rake::Task["mongo:mongrate:down"].invoke
         Rake::Task["mongo:mongrate:up"].invoke
       else
-        Rake::Task["mongo:rollback"].invoke
+        Rake::Task["mongo:mongrate:rollback"].invoke
         Rake::Task["mongo:mongrate"].invoke
       end
     end
