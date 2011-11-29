@@ -36,6 +36,11 @@ namespace :mongo do
     task :rollback => :environment do
       step = ENV['STEP'] ? ENV['STEP'].to_i : 1
       MongoMapper::Migrator.rollback(@path, step)
+    end
+
+    desc 'Show the current version of the mongrations'
+    task :version => :environment do
+      puts MongoMapper::Migrator.current_version
     end    
   end
 end
