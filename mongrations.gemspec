@@ -20,7 +20,8 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_development_dependency "shoulda"
-  s.add_development_dependency "matchy"
+  s.add_development_dependency "mcmire-matchy"
+  s.add_development_dependency "bson_ext"
 
   s.add_dependency "mongo_mapper"
 end
