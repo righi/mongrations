@@ -1,5 +1,6 @@
 namespace :mongo do
-  @path = File.join(Rails.root, "db", "mongrations")
+  gem_root = Gem::Specification.find_by_name("mongrations").gem_dir
+  @path = File.join(gem_root, "db", "mongrations")
 
   desc "Migrate the database through scripts in db/mongrations. Target specific version with VERSION=x."
   task :mongrate => :environment do
